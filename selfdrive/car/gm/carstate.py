@@ -3,8 +3,7 @@ from common.numpy_fast import mean
 from opendbc.can.can_define import CANDefine
 from opendbc.can.parser import CANParser
 from selfdrive.car.interfaces import CarStateBase
-from selfdrive.car.gm.values import DBC, CAR, AccState, CanBus, \
-                                    CruiseButtons, STEER_THRESHOLD
+from selfdrive.car.gm.values import DBC, CAR, AccState, CanBus, CruiseButtons,  STEER_THRESHOLD
 from selfdrive.config import Conversions as CV
 
 class CarState(CarStateBase):
@@ -35,7 +34,9 @@ class CarState(CarStateBase):
     ret.vEgo = pt_cp.vl["ECMVehicleSpeed"]["VehicleSpeed"] * CV.MPH_TO_MS
 
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(pt_cp.vl["ECMPRDNL"]["PRNDL"], None))
+    ret.brakePressed = pt_cp.vl["ECMEngineStatus"]["Brake_Pressed"] != 0
     ret.brake = pt_cp.vl["EBCMBrakePedalPosition"]["BrakePedalPosition"] / 0xd0
+
     # Brake pedal's potentiometer returns near-zero reading even when pedal is not pressed.
     if ret.brake < 10/0xd0:
       ret.brake = 0.
@@ -73,6 +74,7 @@ class CarState(CarStateBase):
     self.park_brake = pt_cp.vl["EPBStatus"]["EPBClosed"]
     self.main_on = bool(pt_cp.vl["ECMEngineStatus"]["CruiseMainOn"])
     ret.mainOn = self.main_on
+    ret.cruiseState.available = pt_cp.vl["ECMEngineStatus"]["CruiseMainOn"] != 0
     ret.espDisabled = pt_cp.vl["ESPStatus"]["TractionControlOn"] != 1
     self.pcm_acc_status = pt_cp.vl["AcceleratorPedal2"]["CruiseState"]
     ret.cruiseState.available = self.pcm_acc_status != 0
@@ -94,37 +96,36 @@ class CarState(CarStateBase):
 
   @staticmethod
   def get_can_parser(CP):
-    # this function generates lists for signal, messages and initial values
     signals = [
-      # sig_name, sig_address, default
-      ("BrakePedalPosition", "EBCMBrakePedalPosition", 0),
-      ("FrontLeftDoor", "BCMDoorBeltStatus", 0),
-      ("FrontRightDoor", "BCMDoorBeltStatus", 0),
-      ("RearLeftDoor", "BCMDoorBeltStatus", 0),
-      ("RearRightDoor", "BCMDoorBeltStatus", 0),
-      ("LeftSeatBelt", "BCMDoorBeltStatus", 0),
-      ("RightSeatBelt", "BCMDoorBeltStatus", 0),
-      ("TurnSignals", "BCMTurnSignals", 0),
-      ("AcceleratorPedal", "AcceleratorPedal", 0),
-      ("CruiseState", "AcceleratorPedal2", 0),
-      ("ACCButtons", "ASCMSteeringButton", CruiseButtons.UNPRESS),
-      ("SteeringWheelAngle", "PSCMSteeringAngle", 0),
-      ("SteeringWheelRate", "PSCMSteeringAngle", 0),
-      ("FLWheelSpd", "EBCMWheelSpdFront", 0),
-      ("FRWheelSpd", "EBCMWheelSpdFront", 0),
-      ("RLWheelSpd", "EBCMWheelSpdRear", 0),
-      ("RRWheelSpd", "EBCMWheelSpdRear", 0),
-      ("PRNDL", "ECMPRDNL", 0),
-      ("LKADriverAppldTrq", "PSCMStatus", 0),
-      ("LKATorqueDelivered", "PSCMStatus", 0),
-      ("LKATorqueDeliveredStatus", "PSCMStatus", 0),
-      ("TractionControlOn", "ESPStatus", 0),
-      ("EPBClosed", "EPBStatus", 0),
-      ("CruiseMainOn", "ECMEngineStatus", 0),
+      # sig_name, sig_address
+      ("BrakePedalPosition", "EBCMBrakePedalPosition"),
+      ("FrontLeftDoor", "BCMDoorBeltStatus"),
+      ("FrontRightDoor", "BCMDoorBeltStatus"),
+      ("RearLeftDoor", "BCMDoorBeltStatus"),
+      ("RearRightDoor", "BCMDoorBeltStatus"),
+      ("LeftSeatBelt", "BCMDoorBeltStatus"),
+      ("RightSeatBelt", "BCMDoorBeltStatus"),
+      ("TurnSignals", "BCMTurnSignals"),
+      ("AcceleratorPedal2", "AcceleratorPedal2"),
+      ("CruiseState", "AcceleratorPedal2"),
+      ("ACCButtons", "ASCMSteeringButton"),
+      ("SteeringWheelAngle", "PSCMSteeringAngle"),
+      ("SteeringWheelRate", "PSCMSteeringAngle"),
+      ("FLWheelSpd", "EBCMWheelSpdFront"),
+      ("FRWheelSpd", "EBCMWheelSpdFront"),
+      ("RLWheelSpd", "EBCMWheelSpdRear"),
+      ("RRWheelSpd", "EBCMWheelSpdRear"),
+      ("PRNDL", "ECMPRDNL"),
+      ("LKADriverAppldTrq", "PSCMStatus"),
+      ("LKATorqueDelivered", "PSCMStatus"),
+      ("LKATorqueDeliveredStatus", "PSCMStatus"),
+      ("TractionControlOn", "ESPStatus"),
+      ("EPBClosed", "EPBStatus"),
+      ("CruiseMainOn", "ECMEngineStatus"),
+      ("Brake_Pressed", "ECMEngineStatus"),
       ("ACCCmdActive", "ASCMActiveCruiseControlStatus", 0),
       ("LKATotalTorqueDelivered", "PSCMStatus", 0),
       ("VehicleSpeed", "ECMVehicleSpeed", 0),
-
     ]
 
 
@@ -146,7 +147,7 @@ class CarState(CarStateBase):
   @staticmethod
   def get_loopback_can_parser(CP):
     signals = [
-      ("RollingCounter", "ASCMLKASteeringCmd", 0),
+      ("RollingCounter", "ASCMLKASteeringCmd"),
     ]
 
     checks = [

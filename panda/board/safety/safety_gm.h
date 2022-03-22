@@ -21,8 +21,8 @@ const int GM_GAS_INTERCEPTOR_THRESHOLD = 458;  // (610 + 306.25) / 2ratio betwee
 #define MSG_RX_STEER      0x184   // RX from PSCM, for steering torque and status
 #define MSG_RX_WHEEL      0x34A   // RX from EBCM, for wheel speed
 #define MSG_RX_BUTTON     0x1E1   // RX from BCM, for Cruise Buttons
-#define MSG_RX_BRAKE      0xF1    // RX from EBCM, for Brake Position
-#define MSG_RX_GAS        0x1A1   // RX from EBCM, for Pedal Position
+#define MSG_RX_BRAKE      0xF1    //241// RX from EBCM, for Brake Position
+#define MSG_RX_GAS        0x1A1   //417// RX from EBCM, for Pedal Position
 #define MSG_RX_PEDAL      0x201   // RX from Pedal Interceptor
 
 #define MSG_TX_LKA        0x180   // TX by OP, for LKA commands
@@ -131,8 +131,8 @@ static int gm_rx_hook(CANPacket_t *to_push) {
     //generic_rx_checks(((addr == 384) || (addr == 715)));
   }
   return valid;
-/////////////////½¶·¯´Â 189¿¡ ´ëÇØ Á¶»çÇÏ°íÀÖÀ¸³ª ±âÁ¸ »ç¿ëÇÏ´ø ÆÇ´ÙÆß¿¡¼± 0x189(393) ÀÌ ¸®Á¨ À¸·Î ÁöÁ¤µÇ¾îÀÖÀ½. ±×·¯³ª ±âÁ¸ ¾îÂ÷ÇÇ gm_rx_hook ¿¡¼­ ÆÐµé °Ë»ç ¾ÈÇÔ
-/////////////////ÇâÈÄ¿¡ Â÷Â÷´Ô¿¡°Ô È®ÀÎ ÇÊ¿ä
+/////////////////ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 189ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ç´ï¿½ï¿½ß¿ï¿½ï¿½ï¿½ 0x189(393) ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ï¿½ï¿½ï¿½ï¿½. ï¿½×·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ gm_rx_hook ï¿½ï¿½ï¿½ï¿½ ï¿½Ðµï¿½ ï¿½Ë»ï¿½ ï¿½ï¿½ï¿½ï¿½
+/////////////////ï¿½ï¿½ï¿½Ä¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ô¿ï¿½ï¿½ï¿½ È®ï¿½ï¿½ ï¿½Ê¿ï¿½
     // exit controls on regen paddle
 //    if (addr == 189) {
 //      bool regen = GET_BYTE(to_push, 0) & 0x20U;

@@ -160,7 +160,8 @@ class Panda(object):
   HW_TYPE_RED_PANDA = b'\x07'
 
   CAN_PACKET_VERSION = 2
-  HEALTH_PACKET_VERSION = 1
+  HEALTH_PACKET_VERSION = 3
+  HEALTH_STRUCT = struct.Struct("<IIIIIIIIBBBBBBBHBBBHI")
 
   F2_DEVICES = [HW_TYPE_PEDAL]
   F4_DEVICES = [HW_TYPE_WHITE_PANDA, HW_TYPE_GREY_PANDA, HW_TYPE_BLACK_PANDA, HW_TYPE_UNO, HW_TYPE_DOS]
@@ -168,7 +169,6 @@ class Panda(object):
 
   CLOCK_SOURCE_MODE_DISABLED = 0
   CLOCK_SOURCE_MODE_FREE_RUNNING = 1
-  CLOCK_SOURCE_MODE_EXTERNAL_SYNC = 2
 
   FLAG_HONDA_ALT_BRAKE = 1
   FLAG_HONDA_BOSCH_LONG = 2
@@ -353,8 +353,8 @@ class Panda(object):
 
   @ensure_health_packet_version
   def health(self):
-    dat = self._handle.controlRead(Panda.REQUEST_IN, 0xd2, 0, 0, 44)
-    a = struct.unpack("<IIIIIIIIBBBBBBBHBBB", dat)
+    dat = self._handle.controlRead(Panda.REQUEST_IN, 0xd2, 0, 0, self.HEALTH_STRUCT.size)
+    a = self.HEALTH_STRUCT.unpack(dat)
     return {
       "uptime": a[0],
       "voltage": a[1],
@@ -375,6 +375,8 @@ class Panda(object):
       "fault_status": a[16],
       "power_save_enabled": a[17],
       "heartbeat_lost": a[18],
+      "unsafe_mode": a[19],
+      "blocked_msg_cnt": a[20],
     }
 
   # ******************* control *******************
@@ -675,8 +677,8 @@ class Panda(object):
     msg += self.kline_ll_recv(msg[-1]+1, bus=bus)
     return msg
 
-  def send_heartbeat(self):
-    self._handle.controlWrite(Panda.REQUEST_OUT, 0xf3, 0, 0, b'')
+  def send_heartbeat(self, engaged=True):
+    self._handle.controlWrite(Panda.REQUEST_OUT, 0xf3, engaged, 0, b'')
 
   # disable heartbeat checks for use outside of openpilot
   # sending a heartbeat will reenable the checks

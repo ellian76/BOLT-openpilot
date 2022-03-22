@@ -52,6 +52,7 @@ class CarInterface(CarInterfaceBase):
     # GM port is a community feature
     # TODO: make a port that uses a car harness and it only intercepts the camera
     ret.communityFeature = True
+    ret.dashcamOnly = candidate in {CAR.CADILLAC_ATS, CAR.HOLDEN_ASTRA, CAR.MALIBU, CAR.BUICK_REGAL}
 
     # Presence of a camera on the object bus is ok.
     # Have to go to read_only if ASCM is online (ACC-enabled cars),
@@ -150,7 +151,7 @@ class CarInterface(CarInterfaceBase):
 
     ret.buttonEvents = buttonEvents
 
-    events = self.create_common_events(ret)
+    events = self.create_common_events(ret, pcm_enable=False))
 
     if ret.vEgo < self.CP.minEnableSpeed:
       events.add(EventName.belowEngageSpeed)
@@ -233,15 +234,19 @@ class CarInterface(CarInterfaceBase):
     return self.CS.out
 
   def apply(self, c):
-    hud_v_cruise = c.hudControl.setSpeed
+    hud_control = c.hudControl
+    hud_v_cruise = hud_control.setSpeed
     if hud_v_cruise > 70:
       hud_v_cruise = 0
 
     # For Openpilot, "enabled" includes pre-enable.
-    can_sends = self.CC.update(c.enabled, self.CS, self.frame,
-                               c.actuators,
-                               hud_v_cruise, c.hudControl.lanesVisible,
-                               c.hudControl.leadVisible, c.hudControl.visualAlert)
+    # In GM, PCM faults out if ACC command overlaps user gas.
+    enabled = c.enabled and not self.CS.out.gasPressed
+
+    ret = self.CC.update(c, enabled, self.CS, self.frame,
+                         c.actuators,
+                         hud_v_cruise, hud_control.lanesVisible,
+                         hud_control.leadVisible, hud_control.visualAlert)
 
     self.frame += 1
-    return can_sends
+    return ret
