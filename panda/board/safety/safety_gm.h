@@ -32,7 +32,7 @@ const int GM_GAS_INTERCEPTOR_THRESHOLD = 458;  // (610 + 306.25) / 2ratio betwee
 #define MSG_TX_PEDAL      0x200   // TX by OP, for Pedal Interceptor
 
 #define MSG_REGEN         0x189   // TX/RX for Regen Paddle
-#comma default says 0xBD(189) is Regen.
+//comma default says 0xBD(189) is Regen.
 
 
 const CanMsg GM_TX_MSGS[] = {{MSG_TX_LKA, 0, 4}, {MSG_TX_ALIVE, 0, 7}, {MSG_TX_ASCM, 0, 7}, {MSG_TX_ACC, 0, 6}, {MSG_TX_PEDAL, 0, 6}, {MSG_REGEN, 0, 7}, // pt bus
