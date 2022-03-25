@@ -14,8 +14,8 @@ jobs:
   python_linter:
     name: python lint - GM cars
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-20.04
+    if: github.repository == 'jc01rho-openpilot-BoltEV2019-KoKr/openpilot'
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
